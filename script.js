@@ -1,4 +1,4 @@
-// script.js
+// script.js - minimal changes version
 
 const GRID_SIZE = 7;
 const tilesContainer = document.getElementById('grid');
@@ -13,7 +13,7 @@ let solutionPath = [];
 let currentIndex = 0;
 let selectedTiles = [];
 
-// Load word data
+// Load words
 fetch('words.json')
   .then(res => res.json())
   .then(data => {
@@ -21,7 +21,6 @@ fetch('words.json')
     startGame();
   });
 
-// --- Start / Reset Game ---
 function startGame() {
   currentIndex = 0;
   selectedTiles = [];
@@ -29,31 +28,43 @@ function startGame() {
   tilesContainer.innerHTML = '';
   popup.classList.add('hidden');
 
-  // Pick 3 random words
+  // pick 3 random words
   const chosenWords = [];
   while (chosenWords.length < 3) {
     const w = words[Math.floor(Math.random() * words.length)];
     if (!chosenWords.includes(w)) chosenWords.push(w);
   }
 
-  // Generate path for the words
-  solutionPath = generatePath(chosenWords);
+  // generate solution path
+  solutionPath = [];
+  let x = 0, y = 0;
+  chosenWords.forEach(word => {
+    for (let i = 0; i < word.word.length; i++) {
+      solutionPath.push({
+        x: x,
+        y: y,
+        letter: word.word[i],
+        word: word,
+        isWordEnd: i === word.word.length - 1 // ONLY last letter of word
+      });
 
-  // Fill the rest of the grid with random letters
+      // simple horizontal/vertical move
+      if (x < GRID_SIZE - 1) x++;
+      else if (y < GRID_SIZE - 1) y++;
+    }
+  });
+
+  // build grid
   const grid = [];
   for (let i = 0; i < GRID_SIZE; i++) {
     grid[i] = [];
     for (let j = 0; j < GRID_SIZE; j++) {
       const tileData = solutionPath.find(t => t.x === j && t.y === i);
-      if (tileData) {
-        grid[i][j] = tileData.letter;
-      } else {
-        grid[i][j] = randomLetter();
-      }
+      grid[i][j] = tileData ? tileData.letter : randomLetter();
     }
   }
 
-  // Render the grid
+  // render tiles
   for (let i = 0; i < GRID_SIZE; i++) {
     for (let j = 0; j < GRID_SIZE; j++) {
       const tile = document.createElement('div');
@@ -62,7 +73,6 @@ function startGame() {
       tile.dataset.x = j;
       tile.dataset.y = i;
 
-      // Mark start and goal
       if (i === 0 && j === 0) tile.classList.add('start');
       if (i === GRID_SIZE - 1 && j === GRID_SIZE - 1) tile.classList.add('goal');
 
@@ -72,7 +82,6 @@ function startGame() {
   }
 }
 
-// --- Tile Click ---
 function handleTileClick(e) {
   const tile = e.currentTarget;
   const x = parseInt(tile.dataset.x);
@@ -86,13 +95,13 @@ function handleTileClick(e) {
     selectedTiles.push(tile);
     currentIndex++;
 
-    // Only play ding/audio if this is the last letter of the word
+    // only play ding/audio at last letter of the word
     if (expected.isWordEnd) {
       ding.play();
       new Audio(expected.word.audio).play();
     }
 
-    // Check if game complete
+    // game complete
     if (currentIndex === solutionPath.length) {
       setTimeout(() => popup.classList.remove('hidden'), 500);
     }
@@ -101,36 +110,10 @@ function handleTileClick(e) {
   }
 }
 
-// --- Random letter ---
 function randomLetter() {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   return letters[Math.floor(Math.random() * letters.length)];
 }
 
-// --- Generate path for words ---
-function generatePath(wordsArray) {
-  const path = [];
-  let x = 0, y = 0;
-
-  wordsArray.forEach(word => {
-    for (let i = 0; i < word.word.length; i++) {
-      path.push({
-        x,
-        y,
-        letter: word.word[i],
-        word: word,
-        isWordEnd: i === word.word.length - 1
-      });
-
-      // Move to next tile: simple approach (horizontal first)
-      if (x < GRID_SIZE - 1) x++;
-      else if (y < GRID_SIZE - 1) y++;
-      else x++; // fallback if at edge
-    }
-  });
-
-  return path;
-}
-
-// --- Play Again ---
+// play again
 playAgainBtn.addEventListener('click', startGame);
