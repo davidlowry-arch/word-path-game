@@ -1,9 +1,7 @@
 // script.js
 
-// Config
 const GRID_SIZE = 7;
 const tilesContainer = document.getElementById('grid');
-const imagesContainer = document.getElementById('word-images');
 const popup = document.getElementById('popup');
 const playAgainBtn = document.getElementById('play-again');
 
@@ -14,7 +12,6 @@ let words = [];
 let solutionPath = [];
 let currentIndex = 0;
 let selectedTiles = [];
-let currentWordIndex = 0;
 
 // Load word data
 fetch('words.json')
@@ -28,10 +25,8 @@ fetch('words.json')
 function startGame() {
   currentIndex = 0;
   selectedTiles = [];
-  currentWordIndex = 0;
   solutionPath = [];
   tilesContainer.innerHTML = '';
-  imagesContainer.innerHTML = '';
   popup.classList.add('hidden');
 
   // Pick 3 random words
@@ -40,16 +35,6 @@ function startGame() {
     const w = words[Math.floor(Math.random() * words.length)];
     if (!chosenWords.includes(w)) chosenWords.push(w);
   }
-
-  // Show images
-  chosenWords.forEach((w, i) => {
-    const img = document.createElement('img');
-    img.src = w.image;
-    img.classList.add('word-image');
-    img.dataset.index = i;
-    img.addEventListener('click', () => new Audio(w.audio).play());
-    imagesContainer.appendChild(img);
-  });
 
   // Generate path for the words
   solutionPath = generatePath(chosenWords);
@@ -85,8 +70,6 @@ function startGame() {
       tilesContainer.appendChild(tile);
     }
   }
-
-  updateWordHighlight();
 }
 
 // --- Tile Click ---
@@ -103,12 +86,10 @@ function handleTileClick(e) {
     selectedTiles.push(tile);
     currentIndex++;
 
-    // Check if end of word
+    // Only play ding/audio if this is the last letter of the word
     if (expected.isWordEnd) {
       ding.play();
       new Audio(expected.word.audio).play();
-      currentWordIndex++;
-      updateWordHighlight();
     }
 
     // Check if game complete
@@ -118,18 +99,6 @@ function handleTileClick(e) {
   } else {
     thud.play();
   }
-}
-
-// --- Highlight current word image ---
-function updateWordHighlight() {
-  const imgs = imagesContainer.querySelectorAll('img');
-  imgs.forEach((img, i) => {
-    if (i === currentWordIndex) {
-      img.classList.add('current-word');
-    } else {
-      img.classList.remove('current-word');
-    }
-  });
 }
 
 // --- Random letter ---
