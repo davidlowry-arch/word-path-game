@@ -1,4 +1,4 @@
-// script.js - minimal changes version
+// original working script.js
 
 const GRID_SIZE = 7;
 const tilesContainer = document.getElementById('grid');
@@ -13,7 +13,7 @@ let solutionPath = [];
 let currentIndex = 0;
 let selectedTiles = [];
 
-// Load words
+// Load word data
 fetch('words.json')
   .then(res => res.json())
   .then(data => {
@@ -28,33 +28,25 @@ function startGame() {
   tilesContainer.innerHTML = '';
   popup.classList.add('hidden');
 
-  // pick 3 random words
+  // Pick 3 random words
   const chosenWords = [];
   while (chosenWords.length < 3) {
     const w = words[Math.floor(Math.random() * words.length)];
     if (!chosenWords.includes(w)) chosenWords.push(w);
   }
 
-  // generate solution path
+  // Generate solution path
   solutionPath = [];
   let x = 0, y = 0;
   chosenWords.forEach(word => {
     for (let i = 0; i < word.word.length; i++) {
-      solutionPath.push({
-        x: x,
-        y: y,
-        letter: word.word[i],
-        word: word,
-        isWordEnd: i === word.word.length - 1 // ONLY last letter of word
-      });
-
-      // simple horizontal/vertical move
+      solutionPath.push({ x, y, letter: word.word[i], word });
       if (x < GRID_SIZE - 1) x++;
       else if (y < GRID_SIZE - 1) y++;
     }
   });
 
-  // build grid
+  // Fill the rest of the grid
   const grid = [];
   for (let i = 0; i < GRID_SIZE; i++) {
     grid[i] = [];
@@ -64,7 +56,7 @@ function startGame() {
     }
   }
 
-  // render tiles
+  // Render grid
   for (let i = 0; i < GRID_SIZE; i++) {
     for (let j = 0; j < GRID_SIZE; j++) {
       const tile = document.createElement('div');
@@ -95,13 +87,9 @@ function handleTileClick(e) {
     selectedTiles.push(tile);
     currentIndex++;
 
-    // only play ding/audio at last letter of the word
-    if (expected.isWordEnd) {
-      ding.play();
-      new Audio(expected.word.audio).play();
-    }
+    ding.play();
+    new Audio(expected.word.audio).play();
 
-    // game complete
     if (currentIndex === solutionPath.length) {
       setTimeout(() => popup.classList.remove('hidden'), 500);
     }
@@ -115,5 +103,4 @@ function randomLetter() {
   return letters[Math.floor(Math.random() * letters.length)];
 }
 
-// play again
 playAgainBtn.addEventListener('click', startGame);
