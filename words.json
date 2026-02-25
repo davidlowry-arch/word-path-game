@@ -1,0 +1,302 @@
+[
+  {
+    "word": "yàmb",
+    "image": "images/abeille.png",
+    "audio": "audio/abeille.mp3"
+  },
+  {
+    "word": "jënd",
+    "image": "images/acheter.png",
+    "audio": "audio/acheter.mp3"
+  },
+  {
+    "word": "daas",
+    "image": "images/aiguiser.png",
+    "audio": "audio/aiguiser.mp3"
+  },
+  {
+    "word": "jargoñ",
+    "image": "images/araignee.png",
+    "audio": "audio/araignee.mp3"
+  },
+  {
+    "word": "garab",
+    "image": "images/arbre.png",
+    "audio": "audio/arbre.mp3"
+  },
+  {
+    "word": "xaalis",
+    "image": "images/argent.png",
+    "audio": "audio/argent.mp3"
+  },
+  {
+    "word": "naan",
+    "image": "images/boire.png",
+    "audio": "audio/boire.mp3"
+  },
+  {
+    "word": "gëmmiñ",
+    "image": "images/bouche.png",
+    "audio": "audio/bouche.mp3"
+  },
+  {
+    "word": "woy",
+    "image": "images/chanter.png",
+    "audio": "audio/chanter.mp3"
+  },
+  {
+    "word": "këriñ",
+    "image": "images/charbon.png",
+    "audio": "audio/charbon.mp3"
+  },
+  {
+    "word": "muus",
+    "image": "images/chat.png",
+    "audio": "audio/chat.mp3"
+  },
+  {
+    "word": "kawaar",
+    "image": "images/cheveux.png",
+    "audio": "audio/cheveux.mp3"
+  },
+  {
+    "word": "bëy",
+    "image": "images/chevre.png",
+    "audio": "audio/chevre.mp3"
+  },
+  {
+    "word": "juróom",
+    "image": "images/cinq.png",
+    "audio": "audio/cinq.mp3"
+  },
+  {
+    "word": "caq",
+    "image": "images/collier.png",
+    "audio": "audio/collier.mp3"
+  },
+  {
+    "word": "yaram",
+    "image": "images/corps.png",
+    "audio": "audio/corps.mp3"
+  },
+  {
+    "word": "loos",
+    "image": "images/cou.png",
+    "audio": "audio/cou.mp3"
+  },
+  {
+    "word": "paaka",
+    "image": "images/couteau.png",
+    "audio": "audio/couteau.mp3"
+  },
+  {
+    "word": "fecc",
+    "image": "images/danse.png",
+    "audio": "audio/danse.mp3"
+  },
+  {
+    "word": "bëñ",
+    "image": "images/dent.png",
+    "audio": "audio/dent.mp3"
+  },
+  {
+    "word": "baraam",
+    "image": "images/doigt.png",
+    "audio": "audio/doigt.mp3"
+  },
+  {
+    "word": "ñay",
+    "image": "images/elephant.png",
+    "audio": "audio/elephant.mp3"
+  },
+  {
+    "word": "jigéen",
+    "image": "images/femme.png",
+    "audio": "audio/femme.mp3"
+  },
+  {
+    "word": "safara",
+    "image": "images/feu.png",
+    "audio": "audio/feu.mp3"
+  },
+  {
+    "word": "musor",
+    "image": "images/foulard.png",
+    "audio": "audio/foulard.mp3"
+  },
+  {
+    "word": "jë",
+    "image": "images/front.png",
+    "audio": "audio/front.mp3"
+  },
+  {
+    "word": "saaxar",
+    "image": "images/fumee.png",
+    "audio": "audio/fumee.mp3"
+  },
+  {
+    "word": "óom",
+    "image": "images/genou.png",
+    "audio": "audio/genou.mp3"
+  },
+  {
+    "word": "ñax",
+    "image": "images/herbes.png",
+    "audio": "audio/herbes.mp3"
+  },
+  {
+    "word": "looy",
+    "image": "images/hibou.png",
+    "audio": "audio/hibou.mp3"
+  },
+  {
+    "word": "góor",
+    "image": "images/homme.png",
+    "audio": "audio/homme.mp3"
+  },
+  {
+    "word": "bukki",
+    "image": "images/hyene.png",
+    "audio": "audio/hyene.mp3"
+  },
+  {
+    "word": "lammiñ",
+    "image": "images/langue.png",
+    "audio": "audio/langue.mp3"
+  },
+  {
+    "word": "gaynde",
+    "image": "images/lion.png",
+    "audio": "audio/lion.mp3"
+  },
+  {
+    "word": "wéer",
+    "image": "images/lune.png",
+    "audio": "audio/lune.mp3"
+  },
+  {
+    "word": "bëre",
+    "image": "images/lutter.png",
+    "audio": "audio/lutter.mp3"
+  },
+  {
+    "word": "kër",
+    "image": "images/maison.png",
+    "audio": "audio/maison.mp3"
+  },
+  {
+    "word": "cin",
+    "image": "images/marmite.png",
+    "audio": "audio/marmite.mp3"
+  },
+  {
+    "word": "man",
+    "image": "images/moi.png",
+    "audio": "audio/moi.mp3"
+  },
+  {
+    "word": "yéeg",
+    "image": "images/monter.png",
+    "audio": "audio/monter.mp3"
+  },
+  {
+    "word": "weñ",
+    "image": "images/mouche.png",
+    "audio": "audio/mouche.mp3"
+  },
+  {
+    "word": "bakkan",
+    "image": "images/nez.png",
+    "audio": "audio/nez.mp3"
+  },
+  {
+    "word": "bët",
+    "image": "images/oeil.png",
+    "audio": "audio/oeil.mp3"
+  },
+  {
+    "word": "yax",
+    "image": "images/os.png",
+    "audio": "audio/os.mp3"
+  },
+  {
+    "word": "mburu",
+    "image": "images/pain.png",
+    "audio": "audio/pain.mp3"
+  },
+  {
+    "word": "baay",
+    "image": "images/pere.png",
+    "audio": "audio/pere.mp3"
+  },
+  {
+    "word": "kaani",
+    "image": "images/piment.png",
+    "audio": "audio/piment.mp3"
+  },
+  {
+    "word": "jooy",
+    "image": "images/pleurer.png",
+    "audio": "audio/pleurer.mp3"
+  },
+  {
+    "word": "dunk",
+    "image": "images/plumes.png",
+    "audio": "audio/plumes.mp3"
+  },
+  {
+    "word": "dënn",
+    "image": "images/poitrine.png",
+    "audio": "audio/poitrine.mp3"
+  },
+  {
+    "word": "teen",
+    "image": "images/puits.png",
+    "audio": "audio/puits.mp3"
+  },
+  {
+    "word": "ñeent",
+    "image": "images/quatre.png",
+    "audio": "audio/quatre.mp3"
+  },
+  {
+    "word": "laaj",
+    "image": "images/question.png",
+    "audio": "audio/question.mp3"
+  },
+  {
+    "word": "kaña",
+    "image": "images/rat.png",
+    "audio": "audio/rat.mp3"
+  },
+  {
+    "word": "ceeb",
+    "image": "images/riz.png",
+    "audio": "audio/riz.mp3"
+  },
+  {
+    "word": "tëb",
+    "image": "images/sauter.png",
+    "audio": "audio/sauter.mp3"
+  },
+  {
+    "word": "saabu",
+    "image": "images/savon.png",
+    "audio": "audio/savon.mp3"
+  },
+  {
+    "word": "jaan",
+    "image": "images/serpent.png",
+    "audio": "audio/serpent.mp3"
+  },
+  {
+    "word": "jant",
+    "image": "images/soleil.png",
+    "audio": "audio/soleil.mp3"
+  },
+  {
+    "word": "mboonaat",
+    "image": "images/tortue.png",
+    "audio": "audio/tortue.mp3"
+  }
+]
