@@ -1,120 +1,118 @@
-let wordsData = [];
-let grid = [];
-let solutionPath = [];
-let currentIndex = 0;
-let selectedTiles = [];
-let chosenWords = [];
+// script.js
 
-const imagesContainer = document.getElementById('images-container');
-const gridContainer = document.getElementById('grid-container');
+// Config
+const GRID_SIZE = 7;
+const tilesContainer = document.getElementById('grid');
+const imagesContainer = document.getElementById('word-images');
 const popup = document.getElementById('popup');
 const playAgainBtn = document.getElementById('play-again');
 
-const ding = document.getElementById('ding');
-const thud = document.getElementById('thud');
+const ding = new Audio('audio/ding.mp3');
+const thud = new Audio('audio/thud.mp3');
 
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let words = [];
+let solutionPath = [];
+let currentIndex = 0;
+let selectedTiles = [];
+let currentWordIndex = 0;
 
-// Load JSON words
+// Load word data
 fetch('words.json')
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
-    wordsData = data;
-    initGame();
+    words = data;
+    startGame();
   });
 
-function initGame() {
+// --- Start / Reset Game ---
+function startGame() {
   currentIndex = 0;
   selectedTiles = [];
-  grid = Array.from({ length: 7 }, () => Array(7).fill(''));
+  currentWordIndex = 0;
   solutionPath = [];
-  gridContainer.innerHTML = '';
+  tilesContainer.innerHTML = '';
   imagesContainer.innerHTML = '';
   popup.classList.add('hidden');
 
-  // Choose 3 random words
-  chosenWords = [];
+  // Pick 3 random words
+  const chosenWords = [];
   while (chosenWords.length < 3) {
-    const word = wordsData[Math.floor(Math.random() * wordsData.length)];
-    if (!chosenWords.includes(word)) chosenWords.push(word);
+    const w = words[Math.floor(Math.random() * words.length)];
+    if (!chosenWords.includes(w)) chosenWords.push(w);
   }
 
-  // Display images
-  chosenWords.forEach(wordObj => {
+  // Show images
+  chosenWords.forEach((w, i) => {
     const img = document.createElement('img');
-    img.src = wordObj.image;
-    img.addEventListener('click', () => {
-      const audio = new Audio(wordObj.audio);
-      audio.play();
-    });
+    img.src = w.image;
+    img.classList.add('word-image');
+    img.dataset.index = i;
+    img.addEventListener('click', () => new Audio(w.audio).play());
     imagesContainer.appendChild(img);
   });
 
-  generatePath();
-  fillRandomLetters();
-  drawGrid();
-}
+  // Generate path for the words
+  solutionPath = generatePath(chosenWords);
 
-function generatePath() {
-  // For simplicity: linear path from top-left to bottom-right
-  let x = 0, y = 0;
-  chosenWords.forEach(wordObj => {
-    const word = wordObj.word.toUpperCase();
-    for (let i = 0; i < word.length; i++) {
-      grid[y][x] = word[i];
-      solutionPath.push({x, y, letter: word[i], word: wordObj});
-      // Move right or down
-      if (x < 6) x++;
-      else if (y < 6) y++;
-    }
-  });
-  // Mark start and goal
-  grid[0][0] = solutionPath[0].letter;
-  grid[6][6] = solutionPath[solutionPath.length - 1].letter;
-}
-
-function fillRandomLetters() {
-  for (let y = 0; y < 7; y++) {
-    for (let x = 0; x < 7; x++) {
-      if (!grid[y][x]) {
-        grid[y][x] = alphabet[Math.floor(Math.random() * alphabet.length)];
+  // Fill the rest of the grid with random letters
+  const grid = [];
+  for (let i = 0; i < GRID_SIZE; i++) {
+    grid[i] = [];
+    for (let j = 0; j < GRID_SIZE; j++) {
+      const tileData = solutionPath.find(t => t.x === j && t.y === i);
+      if (tileData) {
+        grid[i][j] = tileData.letter;
+      } else {
+        grid[i][j] = randomLetter();
       }
     }
   }
-}
 
-function drawGrid() {
-  gridContainer.innerHTML = '';
-  for (let y = 0; y < 7; y++) {
-    for (let x = 0; x < 7; x++) {
+  // Render the grid
+  for (let i = 0; i < GRID_SIZE; i++) {
+    for (let j = 0; j < GRID_SIZE; j++) {
       const tile = document.createElement('div');
       tile.classList.add('tile');
-      if (x === 0 && y === 0) tile.classList.add('start');
-      if (x === 6 && y === 6) tile.classList.add('goal');
-      tile.textContent = grid[y][x];
-      tile.dataset.x = x;
-      tile.dataset.y = y;
+      tile.textContent = grid[i][j];
+      tile.dataset.x = j;
+      tile.dataset.y = i;
+
+      // Mark start and goal
+      if (i === 0 && j === 0) tile.classList.add('start');
+      if (i === GRID_SIZE - 1 && j === GRID_SIZE - 1) tile.classList.add('goal');
+
       tile.addEventListener('click', handleTileClick);
-      gridContainer.appendChild(tile);
+      tilesContainer.appendChild(tile);
     }
   }
+
+  updateWordHighlight();
 }
 
+// --- Tile Click ---
 function handleTileClick(e) {
-  const x = parseInt(this.dataset.x);
-  const y = parseInt(this.dataset.y);
+  const tile = e.currentTarget;
+  const x = parseInt(tile.dataset.x);
+  const y = parseInt(tile.dataset.y);
+
   const expected = solutionPath[currentIndex];
+  if (!expected) return;
 
   if (x === expected.x && y === expected.y) {
-    this.classList.add('correct');
-    selectedTiles.push(this);
+    tile.classList.add('correct');
+    selectedTiles.push(tile);
     currentIndex++;
-    ding.play();
-    const audio = new Audio(expected.word.audio);
-    audio.play();
 
+    // Check if end of word
+    if (expected.isWordEnd) {
+      ding.play();
+      new Audio(expected.word.audio).play();
+      currentWordIndex++;
+      updateWordHighlight();
+    }
+
+    // Check if game complete
     if (currentIndex === solutionPath.length) {
-      // Game complete
       setTimeout(() => popup.classList.remove('hidden'), 500);
     }
   } else {
@@ -122,4 +120,48 @@ function handleTileClick(e) {
   }
 }
 
-playAgainBtn.addEventListener('click', initGame);
+// --- Highlight current word image ---
+function updateWordHighlight() {
+  const imgs = imagesContainer.querySelectorAll('img');
+  imgs.forEach((img, i) => {
+    if (i === currentWordIndex) {
+      img.classList.add('current-word');
+    } else {
+      img.classList.remove('current-word');
+    }
+  });
+}
+
+// --- Random letter ---
+function randomLetter() {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  return letters[Math.floor(Math.random() * letters.length)];
+}
+
+// --- Generate path for words ---
+function generatePath(wordsArray) {
+  const path = [];
+  let x = 0, y = 0;
+
+  wordsArray.forEach(word => {
+    for (let i = 0; i < word.word.length; i++) {
+      path.push({
+        x,
+        y,
+        letter: word.word[i],
+        word: word,
+        isWordEnd: i === word.word.length - 1
+      });
+
+      // Move to next tile: simple approach (horizontal first)
+      if (x < GRID_SIZE - 1) x++;
+      else if (y < GRID_SIZE - 1) y++;
+      else x++; // fallback if at edge
+    }
+  });
+
+  return path;
+}
+
+// --- Play Again ---
+playAgainBtn.addEventListener('click', startGame);
