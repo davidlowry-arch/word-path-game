@@ -1,7 +1,6 @@
 const GRID_SIZE = 7;
 const tilesContainer = document.getElementById('grid-container');
 const imagesContainer = document.getElementById('images-container');
-const popup = document.getElementById('popup');
 const playAgainBtn = document.getElementById('play-again');
 
 const ding = document.getElementById('ding');
@@ -34,7 +33,9 @@ function startGame() {
   wordStartIndices = [];
   tilesContainer.innerHTML = '';
   imagesContainer.innerHTML = '';
-  popup.classList.add('hidden');
+  
+  // Hide play again button
+  playAgainBtn.classList.remove('visible');
 
   // Pick 3 random words
   chosenWords = [];
@@ -162,25 +163,27 @@ function handleTileClick(e) {
 
     // Check if we've completed a word
     if (expected.isWordEnd) {
-      // Play ding first, then word audio
-      ding.play();
+      // Play ding
+      ding.currentTime = 0;
+      ding.play().catch(e => console.log('Ding play failed:', e));
       
       // Slight delay to let ding play before word audio
       setTimeout(() => {
         const audio = new Audio(chosenWords[expected.wordIndex].audio);
-        audio.play();
-      }, 100);
+        audio.play().catch(e => console.log('Word audio failed:', e));
+      }, 200);
       
       // Highlight the completed word's image
       highlightCompletedWord(expected.wordIndex);
     }
 
-    // Game complete
+    // Game complete - show play again button
     if (currentIndex === solutionPath.length) {
-      setTimeout(() => popup.classList.remove('hidden'), 500);
+      playAgainBtn.classList.add('visible');
     }
   } else {
-    thud.play();
+    thud.currentTime = 0;
+    thud.play().catch(e => console.log('Thud play failed:', e));
     tile.classList.add('wrong');
     setTimeout(() => tile.classList.remove('wrong'), 300);
   }
@@ -192,7 +195,6 @@ function highlightCompletedWord(wordIndex) {
   images.forEach((img, idx) => {
     if (idx === wordIndex) {
       img.classList.add('completed');
-      // Optional: add a subtle border in the word's color
       img.style.borderColor = WORD_COLORS[wordIndex % WORD_COLORS.length];
     }
   });
