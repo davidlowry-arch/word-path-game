@@ -147,13 +147,27 @@ function highlightCompletedWord(wordIndex) {
 
 // --- Generate a valid path ---
 function generatePath(wordsArray) {
-  const maxRetries = 5000;
+  const maxRetries = 10000;
   let retries = 0;
+
+  // Calculate total letters needed
+  const totalLetters = wordsArray.reduce((acc, w) => acc + w.word.length, 0);
+  
+  // Minimum steps needed to reach goal from start (Manhattan distance)
+  const minStepsToGoal = (GRID_SIZE - 1) + (GRID_SIZE - 1); // 12 steps
+  
+  // Check if we have enough letters to make a interesting path
+  // We need at least enough letters to reach the goal, plus some extra to avoid
+  // running out of space
+  if (totalLetters < minStepsToGoal) {
+    console.warn("Total letters less than minimum steps to goal, extending path");
+    // We'll need to add extra steps by revisiting or looping
+  }
 
   while (retries < maxRetries) {
     retries++;
     const path = [];
-    const startIndices = [0]; // Track where each word starts
+    const startIndices = [0];
     let x = 0, y = 0;
     let success = true;
 
@@ -169,8 +183,9 @@ function generatePath(wordsArray) {
           isWordEnd: i === word.length - 1
         });
 
-        // If this is the last letter of the last word, we must be at the goal
+        // If this is the last letter of the last word
         if (w === wordsArray.length - 1 && i === word.length - 1) {
+          // We must be at the goal
           if (x !== GRID_SIZE - 1 || y !== GRID_SIZE - 1) {
             success = false;
           }
@@ -181,6 +196,47 @@ function generatePath(wordsArray) {
         const remainingInCurrentWord = word.length - i - 1;
         const remainingInLaterWords = wordsArray.slice(w + 1).reduce((acc, w2) => acc + w2.word.length, 0);
         const totalRemaining = remainingInCurrentWord + remainingInLaterWords;
+        
+        // Calculate steps to goal from current position
+        const stepsToGoal = (GRID_SIZE - 1 - x) + (GRID_SIZE - 1 - y);
+        
+        // CRITICAL FIX: If we're getting too close to goal with many letters left, we need to wander
+        if (stepsToGoal < totalRemaining - 2) {
+          // We have more letters than steps to goal - need to wander in circles
+          // Find moves that DON'T decrease distance to goal
+          const wanderingMoves = [];
+          
+          // Check all 8 surrounding squares
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              
+              const newX = x + dx;
+              const newY = y + dy;
+              
+              // Check bounds
+              if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
+                // Check if tile is not already used in path
+                if (!path.some(t => t.x === newX && t.y === newY)) {
+                  const newDist = (GRID_SIZE - 1 - newX) + (GRID_SIZE - 1 - newY);
+                  
+                  // Prefer moves that maintain or increase distance to goal
+                  if (newDist >= stepsToGoal) {
+                    wanderingMoves.push({dx, dy, newX, newY});
+                  }
+                }
+              }
+            }
+          }
+          
+          if (wanderingMoves.length > 0) {
+            // Take a wandering move
+            const selectedMove = wanderingMoves[Math.floor(Math.random() * wanderingMoves.length)];
+            x = selectedMove.newX;
+            y = selectedMove.newY;
+            continue; // Skip the rest of the loop for this iteration
+          }
+        }
 
         // Find all possible moves (8 directions including diagonals)
         const possibleMoves = [];
@@ -188,7 +244,7 @@ function generatePath(wordsArray) {
         // Check all 8 surrounding squares
         for (let dy = -1; dy <= 1; dy++) {
           for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue; // Skip current position
+            if (dx === 0 && dy === 0) continue;
             
             const newX = x + dx;
             const newY = y + dy;
@@ -201,6 +257,7 @@ function generatePath(wordsArray) {
                 const manhattanDistToGoal = (GRID_SIZE - 1 - newX) + (GRID_SIZE - 1 - newY);
                 
                 // We need enough remaining letters to reach goal
+                // But also need to ensure we don't reach goal too early
                 if (manhattanDistToGoal <= totalRemaining) {
                   possibleMoves.push({dx, dy, newX, newY});
                 }
@@ -214,14 +271,14 @@ function generatePath(wordsArray) {
           break;
         }
 
-        // Weight moves based on how many letters remain
-        const stepsToGoal = (GRID_SIZE - 1 - x) + (GRID_SIZE - 1 - y);
+        // Weight moves based on the ratio
         const ratio = totalRemaining / stepsToGoal;
         
         let selectedMove;
         
-        if (ratio <= 1.2) {
-          // Need to head directly toward goal - prioritize moves that decrease distance
+        if (ratio < 1) {
+          // Not enough letters to reach goal - this shouldn't happen with our check above
+          // But just in case, prioritize moves that decrease distance
           const bestMoves = possibleMoves.filter(move => {
             const newDist = (GRID_SIZE - 1 - move.newX) + (GRID_SIZE - 1 - move.newY);
             return newDist < stepsToGoal;
@@ -232,14 +289,28 @@ function generatePath(wordsArray) {
           } else {
             selectedMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
           }
+        } else if (ratio > 2) {
+          // Plenty of letters left - can wander more
+          // Prefer moves that DON'T decrease distance too much
+          const wanderingMoves = possibleMoves.filter(move => {
+            const newDist = (GRID_SIZE - 1 - move.newX) + (GRID_SIZE - 1 - move.newY);
+            return newDist >= stepsToGoal - 1; // Maintain or slightly decrease distance
+          });
+          
+          if (wanderingMoves.length > 0) {
+            selectedMove = wanderingMoves[Math.floor(Math.random() * wanderingMoves.length)];
+          } else {
+            selectedMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+          }
         } else {
-          // Can wander more - random choice with slight preference for forward movement
+          // Balanced approach - random with slight preference for forward movement
           const weightedMoves = [];
           possibleMoves.forEach(move => {
-            // Give higher weight to moves that go right/down (toward goal)
             let weight = 1;
-            if (move.dx > 0) weight += 2;
-            if (move.dy > 0) weight += 2;
+            const newDist = (GRID_SIZE - 1 - move.newX) + (GRID_SIZE - 1 - move.newY);
+            
+            // Slight preference for moves that move toward goal
+            if (newDist < stepsToGoal) weight += 1;
             
             for (let i = 0; i < weight; i++) {
               weightedMoves.push(move);
@@ -272,21 +343,23 @@ function generatePath(wordsArray) {
   }
 
   console.error("Failed to generate a valid path after many retries");
-  // Fallback: create a simple diagonal path
-  return generateFallbackPath(wordsArray);
+  // Fallback: create a path that deliberately wanders
+  return generateWanderingFallback(wordsArray);
 }
 
-// --- Fallback path generator ---
-function generateFallbackPath(wordsArray) {
-  console.log("Using fallback path generator");
+// --- Better fallback that handles short words ---
+function generateWanderingFallback(wordsArray) {
+  console.log("Using wandering fallback path generator");
   const path = [];
   const startIndices = [0];
   const wordCombo = wordsArray.map(w => w.word.toUpperCase()).join('');
   
-  // Create a simple diagonal path from (0,0) to (6,6)
+  // Create a path that wanders around before heading to goal
   let x = 0, y = 0;
   let wordIndex = 0;
   let lettersInCurrentWord = 0;
+  let direction = 1; // 1=right, 2=down, 3=left, 4=up
+  let stepsInDirection = 0;
   
   for (let i = 0; i < wordCombo.length; i++) {
     path.push({
@@ -301,14 +374,73 @@ function generateFallbackPath(wordsArray) {
       startIndices.push(i);
     }
     
-    // Move diagonally if possible, otherwise right or down
-    if (x < GRID_SIZE - 1 && y < GRID_SIZE - 1) {
-      x++;
-      y++;
-    } else if (x < GRID_SIZE - 1) {
-      x++;
-    } else if (y < GRID_SIZE - 1) {
-      y++;
+    // If we're near the end, head for goal
+    const remainingLetters = wordCombo.length - i - 1;
+    const stepsToGoal = (GRID_SIZE - 1 - x) + (GRID_SIZE - 1 - y);
+    
+    if (remainingLetters <= stepsToGoal + 1) {
+      // Head directly for goal
+      if (x < GRID_SIZE - 1 && y < GRID_SIZE - 1) {
+        x++;
+        y++;
+      } else if (x < GRID_SIZE - 1) {
+        x++;
+      } else if (y < GRID_SIZE - 1) {
+        y++;
+      }
+    } else {
+      // Wander around
+      stepsInDirection++;
+      
+      // Change direction occasionally
+      if (stepsInDirection > 2 || (x === 0 && direction === 3) || (x === GRID_SIZE-1 && direction === 1) ||
+          (y === 0 && direction === 4) || (y === GRID_SIZE-1 && direction === 2)) {
+        direction = Math.floor(Math.random() * 4) + 1;
+        stepsInDirection = 0;
+      }
+      
+      // Try to move in current direction
+      let moved = false;
+      let attempts = 0;
+      
+      while (!moved && attempts < 10) {
+        let newX = x, newY = y;
+        
+        if (direction === 1 && x < GRID_SIZE - 1) newX++;
+        else if (direction === 2 && y < GRID_SIZE - 1) newY++;
+        else if (direction === 3 && x > 0) newX--;
+        else if (direction === 4 && y > 0) newY--;
+        
+        // Check if this position is already used
+        if (!path.some(t => t.x === newX && t.y === newY)) {
+          x = newX;
+          y = newY;
+          moved = true;
+        } else {
+          direction = Math.floor(Math.random() * 4) + 1;
+        }
+        attempts++;
+      }
+      
+      if (!moved) {
+        // Just move somewhere available
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const newX = x + dx;
+            const newY = y + dy;
+            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
+              if (!path.some(t => t.x === newX && t.y === newY)) {
+                x = newX;
+                y = newY;
+                moved = true;
+                break;
+              }
+            }
+          }
+          if (moved) break;
+        }
+      }
     }
     
     lettersInCurrentWord++;
