@@ -109,17 +109,16 @@ function drawGrid() {
   gridContainer.innerHTML = '';
   
   // Calculate tile size based on screen width
-  const screenWidth = window.innerWidth;
-  const tileSize = Math.min(
-    Math.floor((screenWidth - 40) / 7), // 40px for total horizontal padding
-    80 // Max size for larger screens
-  );
+  // Get the actual available width for the grid
+  const containerWidth = document.getElementById('game-container').offsetWidth;
+  // Subtract padding (20px left + 20px right = 40px) and gaps (6 gaps of 4px = 24px)
+  const availableWidth = containerWidth - 40 - 24;
+  const tileSize = Math.floor(availableWidth / 7);
   
   // Set grid container style
   gridContainer.style.gridTemplateColumns = `repeat(7, ${tileSize}px)`;
   gridContainer.style.gap = '4px';
-  gridContainer.style.padding = '8px';
-  gridContainer.style.justifyContent = 'center';
+  gridContainer.style.padding = '0';
   
   for (let y = 0; y < 7; y++) {
     for (let x = 0; x < 7; x++) {
@@ -131,7 +130,7 @@ function drawGrid() {
       // Style the tile
       tile.style.width = `${tileSize}px`;
       tile.style.height = `${tileSize}px`;
-      tile.style.fontSize = `${Math.floor(tileSize * 0.5)}px`;
+      tile.style.fontSize = `${Math.floor(tileSize * 0.4)}px`; // Slightly smaller font
       
       tile.textContent = grid[y][x];
       tile.dataset.x = x;

@@ -10,7 +10,7 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to allow scrolling if needed */
   margin: 0;
   padding: 10px;
 }
@@ -22,25 +22,30 @@ body {
   border-radius: 20px;
   padding: 20px 10px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #images-container {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-  gap: 10px;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  width: 100%;
   padding: 0 10px;
 }
 
 #images-container img {
   width: 30%;
-  max-width: 100px;
+  max-width: 120px; /* Slightly larger max width */
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 15px;
   border: 3px solid transparent;
   transition: all 0.3s ease;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #images-container img.completed {
@@ -53,7 +58,8 @@ body {
   display: grid;
   justify-content: center;
   margin: 0 auto;
-  width: fit-content;
+  width: 100%;
+  padding: 0 10px;
 }
 
 .tile {
@@ -69,6 +75,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   user-select: none;
+  aspect-ratio: 1; /* Ensures square tiles */
 }
 
 .tile.correct {
