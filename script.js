@@ -60,204 +60,169 @@ function initGame() {
   drawGrid();
 }
 
-function generatePath() {
-  // Clear grid
-  grid = Array.from({ length: 7 }, () => Array(7).fill(''));
-  
-  // Create word combo by concatenating the three words
-  const wordCombo = chosenWords.map(w => w.word.toUpperCase()).join('');
-  const totalLetters = wordCombo.length;
-  
-  // Directions: 1=up-left, 2=up, 3=up-right, 4=right, 5=down-right, 6=down, 7=down-left, 8=left
-  // For each direction, the delta x,y and the opposite direction
-  const directions = {
-    1: { dx: -1, dy: -1, opposite: 8 },
-    2: { dx: 0, dy: -1, opposite: 7 },
-    3: { dx: 1, dy: -1, opposite: 6 },
-    4: { dx: 1, dy: 0, opposite: 5 },
-    5: { dx: 1, dy: 1, opposite: 4 },
-    6: { dx: 0, dy: 1, opposite: 3 },
-    7: { dx: -1, dy: 1, opposite: 2 },
-    8: { dx: -1, dy: 0, opposite: 1 }
-  };
-  
-  // Track the path
-  let path = [];
-  let x = 0, y = 0; // Start at top-left
-  
-  // Place first letter
-  grid[y][x] = wordCombo[0];
-  path.push({x, y, letter: wordCombo[0]});
-  
-  // Track which words we've completed for audio triggers
-  wordStartIndices = [0]; // First word starts at index 0
-  let currentWordLength = chosenWords[0].word.length;
-  let nextWordStart = currentWordLength;
-  
-  // For each subsequent letter
-  for (let i = 1; i < totalLetters; i++) {
-    // Check if we've completed a word
-    if (i === nextWordStart) {
-      wordStartIndices.push(i);
-      currentWordLength = chosenWords[wordStartIndices.length - 1].word.length;
-      nextWordStart += currentWordLength;
-    }
-    
-    // Calculate remaining letters and steps to goal
-    const remainingLetters = totalLetters - i;
-    const stepsToGoal = Math.max(6 - x, 0) + Math.max(6 - y, 0); // Manhattan distance to bottom-right
-    
-    // Find available surrounding squares
-    const available = [];
-    
-    // Check all 8 directions
-    for (let dir = 1; dir <= 8; dir++) {
-      const newX = x + directions[dir].dx;
-      const newY = y + directions[dir].dy;
-      
-      // Check if within grid bounds
-      if (newX >= 0 && newX < 7 && newY >= 0 && newY < 7) {
-        // Check if square is empty
-        if (!grid[newY][newX]) {
-          // Check if this isn't the previous square (no immediate backtracking)
-          if (path.length > 1) {
-            const prev = path[path.length - 2];
-            if (!(prev.x === newX && prev.y === newY)) {
-              available.push(dir);
-            }
-          } else {
-            available.push(dir);
-          }
-        }
-      }
-    }
-    
-    // Calculate ratio of remaining letters to remaining steps
-    const ratio = remainingLetters / stepsToGoal;
-    
-    // Choose direction with weighted probabilities
-    let selectedDir;
-    
-    if (stepsToGoal === remainingLetters) {
-      // Need to take most direct route - prioritize directions toward goal
-      const towardGoal = [];
-      if (x < 6) towardGoal.push(4); // right
-      if (y < 6) towardGoal.push(6); // down
-      if (x < 6 && y < 6) towardGoal.push(5); // down-right
-      
-      // Filter to only available directions
-      const possible = towardGoal.filter(d => available.includes(d));
-      if (possible.length > 0) {
-        selectedDir = possible[Math.floor(Math.random() * possible.length)];
-      } else {
-        // Fallback to any available
-        selectedDir = available[Math.floor(Math.random() * available.length)];
-      }
-    } else {
-      // Weight the directions
-      const weights = [];
-      let totalWeight = 0;
-      
-      available.forEach(dir => {
-        let weight = 1; // Base weight
-        
-        // Directions that move toward goal (3,4,5) get bonus when ratio is low
-        const isTowardGoal = [3, 4, 5].includes(dir);
-        
-        if (ratio < 1.5) {
-          // Need to head more toward goal
-          if (isTowardGoal) weight += 5;
-        } else if (ratio > 2) {
-          // Can wander more - favor directions away from goal
-          if (!isTowardGoal) weight += 3;
-        } else {
-          // Balanced approach
-          if (isTowardGoal) weight += 2;
-        }
-        
-        // Add some randomness
-        weight += Math.random() * 2;
-        
-        weights.push(weight);
-        totalWeight += weight;
-      });
-      
-      // Select direction based on weights
-      let random = Math.random() * totalWeight;
-      let cumulativeWeight = 0;
-      
-      for (let j = 0; j < available.length; j++) {
-        cumulativeWeight += weights[j];
-        if (random < cumulativeWeight) {
-          selectedDir = available[j];
-          break;
-        }
-      }
-    }
-    
-    // Move to new position
-    x += directions[selectedDir].dx;
-    y += directions[selectedDir].dy;
-    
-    // Place the letter
-    grid[y][x] = wordCombo[i];
-    path.push({x, y, letter: wordCombo[i]});
-  }
-  
-  // Ensure we end at bottom-right (6,6)
-  if (x !== 6 || y !== 6) {
-    console.warn("Path didn't end at goal, adjusting...");
-    // Simple adjustment - move to goal if we're close
-    while (x < 6) {
-      x++;
-      if (!grid[y][x]) {
-        grid[y][x] = wordCombo[wordCombo.length - 1];
-        path.push({x, y, letter: wordCombo[wordCombo.length - 1]});
-      }
-    }
-    while (y < 6) {
-      y++;
-      if (!grid[y][x]) {
-        grid[y][x] = wordCombo[wordCombo.length - 1];
-        path.push({x, y, letter: wordCombo[wordCombo.length - 1]});
-      }
-    }
-  }
-  
-  // Update solutionPath with word info for audio triggers
-  solutionPath = [];
-  let wordIdx = 0;
-  let letterInWord = 0;
-  
-  path.forEach((step, index) => {
-    solutionPath.push({
-      ...step,
-      word: chosenWords[wordIdx],
-      wordIndex: wordIdx
-    });
-    
-    letterInWord++;
-    if (wordStartIndices[wordIdx + 1] === index + 1) {
-      wordIdx++;
-      letterInWord = 0;
-    }
+// script.js - smart 7x7 word path with diagonals
+
+const GRID_SIZE = 7;
+const tilesContainer = document.getElementById('grid');
+const popup = document.getElementById('popup');
+const playAgainBtn = document.getElementById('play-again');
+
+const ding = new Audio('audio/ding.mp3');
+const thud = new Audio('audio/thud.mp3');
+
+let words = [];
+let solutionPath = [];
+let currentIndex = 0;
+let selectedTiles = [];
+
+// Load words from JSON
+fetch('words.json')
+  .then(res => res.json())
+  .then(data => {
+    words = data;
+    startGame();
   });
-  
-  // Mark start and goal
-  grid[0][0] = solutionPath[0].letter;
-  grid[6][6] = solutionPath[solutionPath.length - 1].letter;
+
+// --- Start / Reset ---
+function startGame() {
+  currentIndex = 0;
+  selectedTiles = [];
+  solutionPath = [];
+  tilesContainer.innerHTML = '';
+  popup.classList.add('hidden');
+
+  // Pick 3 random words
+  const chosenWords = [];
+  while (chosenWords.length < 3) {
+    const w = words[Math.floor(Math.random() * words.length)];
+    if (!chosenWords.includes(w)) chosenWords.push(w);
+  }
+
+  // Generate a valid path with diagonals
+  solutionPath = generatePath(chosenWords);
+
+  // Fill the grid with letters (solution tiles + random letters)
+  const grid = [];
+  for (let i = 0; i < GRID_SIZE; i++) {
+    grid[i] = [];
+    for (let j = 0; j < GRID_SIZE; j++) {
+      const tileData = solutionPath.find(t => t.x === j && t.y === i);
+      grid[i][j] = tileData ? tileData.letter : randomLetter();
+    }
+  }
+
+  // Render tiles
+  for (let i = 0; i < GRID_SIZE; i++) {
+    for (let j = 0; j < GRID_SIZE; j++) {
+      const tile = document.createElement('div');
+      tile.classList.add('tile');
+      tile.textContent = grid[i][j];
+      tile.dataset.x = j;
+      tile.dataset.y = i;
+
+      if (i === 0 && j === 0) tile.classList.add('start');
+      if (i === GRID_SIZE - 1 && j === GRID_SIZE - 1) tile.classList.add('goal');
+
+      tile.addEventListener('click', handleTileClick);
+      tilesContainer.appendChild(tile);
+    }
+  }
 }
 
-function fillRandomLetters() {
-  for (let y = 0; y < 7; y++) {
-    for (let x = 0; x < 7; x++) {
-      if (!grid[y][x]) {
-        // Get random letter from alphabet
-        grid[y][x] = alphabet[Math.floor(Math.random() * alphabet.length)];
-      }
+// --- Tile click handler ---
+function handleTileClick(e) {
+  const tile = e.currentTarget;
+  const x = parseInt(tile.dataset.x);
+  const y = parseInt(tile.dataset.y);
+
+  const expected = solutionPath[currentIndex];
+  if (!expected) return;
+
+  if (x === expected.x && y === expected.y) {
+    tile.classList.add('correct');
+    selectedTiles.push(tile);
+    currentIndex++;
+
+    // Play ding/audio only at end of a word
+    if (expected.isWordEnd) {
+      ding.play();
+      new Audio(expected.word.audio).play();
     }
+
+    // Game complete
+    if (currentIndex === solutionPath.length) {
+      setTimeout(() => popup.classList.remove('hidden'), 500);
+    }
+  } else {
+    thud.play();
   }
 }
+
+// --- Random letter ---
+function randomLetter() {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  return letters[Math.floor(Math.random() * letters.length)];
+}
+
+// --- Generate a valid path ---
+function generatePath(wordsArray) {
+  const maxRetries = 1000;
+  let retries = 0;
+
+  while (retries < maxRetries) {
+    retries++;
+    const path = [];
+    let x = 0, y = 0;
+    let success = true;
+
+    for (let w = 0; w < wordsArray.length; w++) {
+      const word = wordsArray[w].word;
+
+      for (let i = 0; i < word.length; i++) {
+        path.push({
+          x, y,
+          letter: word[i],
+          word: wordsArray[w],
+          isWordEnd: i === word.length - 1
+        });
+
+        // Possible moves: right, down, diagonal
+        const moves = [];
+        if (x < GRID_SIZE - 1) moves.push([x + 1, y]);
+        if (y < GRID_SIZE - 1) moves.push([x, y + 1]);
+        if (x < GRID_SIZE - 1 && y < GRID_SIZE - 1) moves.push([x + 1, y + 1]);
+
+        // Remove occupied tiles
+        const validMoves = moves.filter(([nx, ny]) => !path.some(t => t.x === nx && t.y === ny));
+        if (validMoves.length === 0) {
+          success = false;
+          break;
+        }
+
+        // Check remaining letters can reach bottom-right
+        const remainingLetters = word.length - i - 1 + wordsArray.slice(w + 1).reduce((acc, w2) => acc + w2.word.length, 0);
+        const distToGoal = (GRID_SIZE - 1 - validMoves[0][0]) + (GRID_SIZE - 1 - validMoves[0][1]);
+        if (distToGoal > remainingLetters) {
+          success = false;
+          break;
+        }
+
+        // Pick a random valid move
+        [x, y] = validMoves[Math.floor(Math.random() * validMoves.length)];
+      }
+      if (!success) break;
+    }
+
+    if (success && x === GRID_SIZE - 1 && y === GRID_SIZE - 1) return path;
+    // else retry
+  }
+
+  console.error("Failed to generate a valid path after many retries");
+  return [];
+}
+
+// --- Play again ---
+playAgainBtn.addEventListener('click', startGame);
 
 function fillRandomLetters() {
   for (let y = 0; y < 7; y++) {
