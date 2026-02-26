@@ -10,7 +10,7 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Changed from center to allow scrolling if needed */
+  align-items: center;
   margin: 0;
   padding: 10px;
 }
@@ -19,33 +19,39 @@ body {
   max-width: 500px;
   width: 100%;
   background-color: white;
-  border-radius: 20px;
-  padding: 20px 10px;
+  border-radius: 30px;
+  padding: 30px 20px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 25px;
 }
 
 #images-container {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin-bottom: 25px;
+  gap: 20px;
   width: 100%;
-  padding: 0 10px;
 }
 
 #images-container img {
-  width: 30%;
-  max-width: 120px; /* Slightly larger max width */
-  aspect-ratio: 1;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
-  border-radius: 15px;
-  border: 3px solid transparent;
+  border-radius: 20px;
+  border: 4px solid transparent;
   transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* For larger phones, make images a bit bigger */
+@media (min-width: 400px) {
+  #images-container img {
+    width: 120px;
+    height: 120px;
+  }
 }
 
 #images-container img.completed {
@@ -56,26 +62,28 @@ body {
 
 #grid-container {
   display: grid;
-  justify-content: center;
-  margin: 0 auto;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
   width: 100%;
-  padding: 0 10px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .tile {
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #e0e0e0;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: bold;
   color: #333;
+  font-size: clamp(16px, 5vw, 24px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   user-select: none;
-  aspect-ratio: 1; /* Ensures square tiles */
 }
 
 .tile.correct {
@@ -135,15 +143,17 @@ body {
 .popup-content h2 {
   margin-bottom: 20px;
   color: #333;
+  font-size: 24px;
 }
 
 #play-again {
   background-color: #4CAF50;
   color: white;
   border: none;
-  padding: 12px 30px;
-  border-radius: 25px;
-  font-size: 1.1rem;
+  padding: 15px 40px;
+  border-radius: 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
   -webkit-tap-highlight-color: transparent;

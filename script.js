@@ -4,8 +4,8 @@ let solutionPath = [];
 let currentIndex = 0;
 let selectedTiles = [];
 let chosenWords = [];
-let currentWordIndex = 0; // Track which word we're on
-let wordStartIndices = []; // Track where each word starts in solutionPath
+let currentWordIndex = 0;
+let wordStartIndices = [];
 
 const imagesContainer = document.getElementById('images-container');
 const gridContainer = document.getElementById('grid-container');
@@ -61,7 +61,6 @@ function initGame() {
 }
 
 function generatePath() {
-  // More robust path generator
   let x = 0, y = 0;
   let pathIndex = 0;
   
@@ -70,21 +69,18 @@ function generatePath() {
     wordStartIndices[wordIdx] = pathIndex;
     
     for (let i = 0; i < word.length; i++) {
-      if (x > 6 || y > 6) {
-        console.error("Path exceeded grid bounds");
-        // Fallback: reset to a safe position
-        x = Math.min(x, 6);
-        y = Math.min(y, 6);
-      }
+      if (x > 6) x = 0, y++;
+      if (y > 6) y = 6; // Prevent going out of bounds
       
       grid[y][x] = word[i];
       solutionPath.push({x, y, letter: word[i], word: wordObj, wordIndex: wordIdx});
       pathIndex++;
       
-      // Smart direction choice - prefer moving right, then down
-      if (x < 6 && (y === 6 || Math.random() > 0.3)) {
+      // Move right, if at edge move down
+      if (x < 6) {
         x++;
-      } else if (y < 6) {
+      } else {
+        x = 0;
         y++;
       }
     }
@@ -108,29 +104,12 @@ function fillRandomLetters() {
 function drawGrid() {
   gridContainer.innerHTML = '';
   
-  // Calculate tile size based on screen width
-  // Get the actual available width for the grid
-  const containerWidth = document.getElementById('game-container').offsetWidth;
-  // Subtract padding (20px left + 20px right = 40px) and gaps (6 gaps of 4px = 24px)
-  const availableWidth = containerWidth - 40 - 24;
-  const tileSize = Math.floor(availableWidth / 7);
-  
-  // Set grid container style
-  gridContainer.style.gridTemplateColumns = `repeat(7, ${tileSize}px)`;
-  gridContainer.style.gap = '4px';
-  gridContainer.style.padding = '0';
-  
   for (let y = 0; y < 7; y++) {
     for (let x = 0; x < 7; x++) {
       const tile = document.createElement('div');
       tile.classList.add('tile');
       if (x === 0 && y === 0) tile.classList.add('start');
       if (x === 6 && y === 6) tile.classList.add('goal');
-      
-      // Style the tile
-      tile.style.width = `${tileSize}px`;
-      tile.style.height = `${tileSize}px`;
-      tile.style.fontSize = `${Math.floor(tileSize * 0.4)}px`; // Slightly smaller font
       
       tile.textContent = grid[y][x];
       tile.dataset.x = x;
@@ -184,13 +163,5 @@ function highlightCompletedWord(wordIndex) {
     }
   });
 }
-
-// Handle window resize
-window.addEventListener('resize', () => {
-  // Only redraw if grid exists
-  if (grid.length > 0) {
-    drawGrid();
-  }
-});
 
 playAgainBtn.addEventListener('click', initGame);
