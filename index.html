@@ -1,24 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Word Path Game</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Word Path Puzzle</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="images-container"></div>
-  <div id="grid-container"></div>
-
-  <div id="popup" class="hidden">
-    <div id="popup-content">
-      <h2>Congratulations!</h2>
-      <button id="play-again">Play Again</button>
+    <div id="game-container">
+        <div id="top-section">
+            <div id="images-container"></div>
+        </div>
+        <div id="bottom-section">
+            <div id="grid-container"></div>
+        </div>
     </div>
-  </div>
+    
+    <div id="popup" class="hidden">
+        <div class="popup-content">
+            <h2>Congratulations!</h2>
+            <p>You found all the words!</p>
+            <button id="play-again">Play Again</button>
+        </div>
+    </div>
 
-  <audio id="ding" src="audio/ding.mp3"></audio>
-  <audio id="thud" src="audio/thud.mp3"></audio>
-
-  <script src="script.js"></script>
+    <audio id="ding" src="ding.mp3" preload="auto"></audio>
+    <audio id="thud" src="thud.mp3" preload="auto"></audio>
+    
+    <script src="script.js"></script>
 </body>
 </html>
