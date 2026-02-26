@@ -7,6 +7,8 @@ const playAgainBtn = document.getElementById('play-again');
 const ding = document.getElementById('ding');
 const thud = document.getElementById('thud');
 
+const WORD_COLORS = ['#4CAF50', '#2196F3', '#FF9800']; // Green, Blue, Orange
+
 let words = [];
 let solutionPath = [];
 let currentIndex = 0;
@@ -137,6 +139,69 @@ function startGame() {
       tilesContainer.appendChild(tile);
     }
   }
+}
+
+// --- Tile click handler ---
+function handleTileClick(e) {
+  const tile = e.currentTarget;
+  const x = parseInt(tile.dataset.x);
+  const y = parseInt(tile.dataset.y);
+
+  const expected = solutionPath[currentIndex];
+  if (!expected) return;
+
+  if (x === expected.x && y === expected.y) {
+    // Color the tile based on which word it belongs to
+    const wordColor = WORD_COLORS[expected.wordIndex % WORD_COLORS.length];
+    tile.style.backgroundColor = wordColor;
+    tile.style.color = 'white';
+    tile.classList.add('correct');
+    
+    selectedTiles.push(tile);
+    currentIndex++;
+
+    // Check if we've completed a word
+    if (expected.isWordEnd) {
+      // Play ding first, then word audio
+      ding.play();
+      
+      // Slight delay to let ding play before word audio
+      setTimeout(() => {
+        const audio = new Audio(chosenWords[expected.wordIndex].audio);
+        audio.play();
+      }, 100);
+      
+      // Highlight the completed word's image
+      highlightCompletedWord(expected.wordIndex);
+    }
+
+    // Game complete
+    if (currentIndex === solutionPath.length) {
+      setTimeout(() => popup.classList.remove('hidden'), 500);
+    }
+  } else {
+    thud.play();
+    tile.classList.add('wrong');
+    setTimeout(() => tile.classList.remove('wrong'), 300);
+  }
+}
+
+// --- Highlight completed word image ---
+function highlightCompletedWord(wordIndex) {
+  const images = document.querySelectorAll('#images-container img');
+  images.forEach((img, idx) => {
+    if (idx === wordIndex) {
+      img.classList.add('completed');
+      // Optional: add a subtle border in the word's color
+      img.style.borderColor = WORD_COLORS[wordIndex % WORD_COLORS.length];
+    }
+  });
+}
+
+// --- Random letter ---
+function randomLetter() {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  return letters[Math.floor(Math.random() * letters.length)];
 }
 
 // --- Validate that a path meets all requirements ---
@@ -275,6 +340,7 @@ function generateGuaranteedPath(wordsArray) {
       x, y,
       letter: wordCombo[i],
       word: wordsArray[wordIndex],
+      wordIndex: wordIndex,
       isWordEnd: lettersInCurrentWord === wordsArray[wordIndex].word.length - 1
     });
     
@@ -310,7 +376,7 @@ function generateGuaranteedPath(wordsArray) {
   return path;
 }
 
-// --- Modify generatePath to return null on failure ---
+// --- Generate a valid path ---
 function generatePath(wordsArray) {
   const maxRetries = 5000;
   let retries = 0;
@@ -334,6 +400,7 @@ function generatePath(wordsArray) {
           x, y,
           letter: word[i],
           word: wordsArray[w],
+          wordIndex: w,
           isWordEnd: i === word.length - 1
         });
 
@@ -442,66 +509,11 @@ function generatePath(wordsArray) {
     }
 
     if (success && x === GRID_SIZE - 1 && y === GRID_SIZE - 1) {
-      return path; // Return path, validation will happen in startGame
+      return path;
     }
   }
 
-  return null; // Return null on failure
-
-}
-
-// --- Tile click handler ---
-function handleTileClick(e) {
-  const tile = e.currentTarget;
-  const x = parseInt(tile.dataset.x);
-  const y = parseInt(tile.dataset.y);
-
-  const expected = solutionPath[currentIndex];
-  if (!expected) return;
-
-  if (x === expected.x && y === expected.y) {
-    tile.classList.add('correct');
-    selectedTiles.push(tile);
-    currentIndex++;
-
-    // Check if we've completed a word
-    const nextWordStart = wordStartIndices[currentWordIndex + 1] || solutionPath.length;
-    if (currentIndex === nextWordStart) {
-      // Completed current word!
-      ding.play();
-      const audio = new Audio(chosenWords[currentWordIndex].audio);
-      audio.play();
-      currentWordIndex++;
-      
-      // Highlight the completed word's image
-      highlightCompletedWord(currentWordIndex - 1);
-    }
-
-    // Game complete
-    if (currentIndex === solutionPath.length) {
-      setTimeout(() => popup.classList.remove('hidden'), 500);
-    }
-  } else {
-    thud.play();
-    tile.classList.add('wrong');
-    setTimeout(() => tile.classList.remove('wrong'), 300);
-  }
-}
-
-// --- Highlight completed word image ---
-function highlightCompletedWord(wordIndex) {
-  const images = document.querySelectorAll('#images-container img');
-  images.forEach((img, idx) => {
-    if (idx === wordIndex) {
-      img.classList.add('completed');
-    }
-  });
-}
-
-// --- Random letter ---
-function randomLetter() {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  return letters[Math.floor(Math.random() * letters.length)];
+  return null;
 }
 
 // --- Play again button event listener ---

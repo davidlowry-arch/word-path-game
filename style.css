@@ -11,12 +11,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
   padding: 10px;
 }
 
 #game-container {
+  max-width: 500px;
   width: 100%;
-  max-width: 450px;
   background-color: white;
   border-radius: 30px;
   padding: 30px 20px;
@@ -24,13 +25,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
+  gap: 25px;
 }
 
 #images-container {
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 20px;
   width: 100%;
 }
 
@@ -45,10 +46,18 @@ body {
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+/* For larger phones, make images a bit bigger */
+@media (min-width: 400px) {
+  #images-container img {
+    width: 120px;
+    height: 120px;
+  }
+}
+
 #images-container img.completed {
-  border-color: #4CAF50;
   opacity: 0.8;
   transform: scale(0.95);
+  border-width: 4px;
 }
 
 #grid-container {
@@ -57,7 +66,7 @@ body {
   gap: 6px;
   width: 100%;
   max-width: 400px;
-  aspect-ratio: 1;
+  margin: 0 auto;
 }
 
 .tile {
@@ -69,30 +78,34 @@ body {
   border-radius: 10px;
   font-weight: bold;
   color: #333;
-  font-size: 24px;
+  font-size: clamp(16px, 6vw, 24px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   user-select: none;
-  width: 100%;
-  height: 100%;
 }
 
-.tile.correct {
-  background-color: #4CAF50;
-  color: white;
-}
-
+/* Start tile - only applies before being clicked */
 .tile.start {
   background-color: #2196F3;
   color: white;
 }
 
+/* Goal tile - only applies before being clicked */
 .tile.goal {
   background-color: #f44336;
   color: white;
 }
 
+/* Correct tiles (all tiles that are part of the path) */
+.tile.correct {
+  transform: scale(0.95);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  color: white;
+}
+
+/* Wrong tile animation */
 .tile.wrong {
   background-color: #ff4444 !important;
   color: white;
@@ -134,31 +147,33 @@ body {
 .popup-content h2 {
   margin-bottom: 20px;
   color: #333;
+  font-size: 24px;
 }
 
 #play-again {
   background-color: #4CAF50;
   color: white;
   border: none;
-  padding: 12px 30px;
-  border-radius: 25px;
-  font-size: 1.1rem;
+  padding: 15px 40px;
+  border-radius: 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #play-again:hover {
   background-color: #45a049;
 }
 
-/* Media query for smaller phones */
-@media (max-width: 400px) {
-  #images-container img {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .tile {
-    font-size: 20px;
-  }
+#play-again:active {
+  transform: scale(0.95);
+}
+
+/* Prevent text selection on double-tap */
+.tile, img, button {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
