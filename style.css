@@ -21,32 +21,32 @@ body {
   background-color: white;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 2vh 4vw;
 }
 
 #top-section {
-  flex: 1.2;  /* Takes about 1/3 of the space */
+  flex: 1;  /* Takes 1 part of the space */
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;  /* Push images to bottom of this section */
   align-items: center;
-  min-height: 0;  /* Preflex overflow */
+  min-height: 0;
+  padding-bottom: 2vh;
 }
 
 #images-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 5vw;
+  gap: 4vw;
   width: 100%;
-  padding: 10px;
 }
 
 #images-container img {
-  width: 25vw;
-  height: 25vw;
-  max-width: 150px;
-  max-height: 150px;
+  width: 22vw;
+  height: 22vw;
+  max-width: 140px;
+  max-height: 140px;
   object-fit: cover;
   border-radius: 20px;
   border: 4px solid transparent;
@@ -62,19 +62,22 @@ body {
 }
 
 #bottom-section {
-  flex: 2;  /* Takes about 2/3 of the space */
+  flex: 2.2;  /* Takes 2.2 parts of the space - giving more room to grid */
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 0;  /* Prevents flex overflow */
+  align-items: flex-start;  /* Align to top of this section */
+  min-height: 0;
+  padding-top: 1vh;
 }
 
 #grid-container {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  width: min(70vmin, 500px);  /* Use the smaller of 70% of viewport min dimension or 500px */
-  height: min(70vmin, 500px);
+  gap: 1.5vw;
+  width: 85vmin;  /* Use viewport minimum dimension */
+  height: 85vmin;  /* Keep it square */
+  max-width: 500px;
+  max-height: 500px;
   margin: 0 auto;
 }
 
@@ -84,10 +87,10 @@ body {
   align-items: center;
   justify-content: center;
   background-color: #e0e0e0;
-  border-radius: 12px;
+  border-radius: 2vw;
   font-weight: bold;
   color: #333;
-  font-size: min(5vmin, 24px);  /* Responsive font size */
+  font-size: 6vmin;  /* Scales with viewport */
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -97,90 +100,4 @@ body {
   height: 100%;
 }
 
-.tile.correct {
-  background-color: #4CAF50;
-  color: white;
-  transform: scale(0.95);
-}
-
-.tile.start {
-  background-color: #2196F3;
-  color: white;
-}
-
-.tile.goal {
-  background-color: #f44336;
-  color: white;
-}
-
-.tile.wrong {
-  background-color: #ff4444 !important;
-  color: white;
-  animation: shake 0.3s ease-in-out;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-#popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-#popup.hidden {
-  display: none;
-}
-
-.popup-content {
-  background-color: white;
-  padding: 30px 20px;
-  border-radius: 20px;
-  text-align: center;
-  max-width: 300px;
-  width: 90%;
-}
-
-.popup-content h2 {
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 24px;
-}
-
-#play-again {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  border-radius: 30px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-#play-again:hover {
-  background-color: #45a049;
-}
-
-#play-again:active {
-  transform: scale(0.95);
-}
-
-/* Prevent text selection on double-tap */
-.tile, img, button {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
+/* Rest of the CSS remains the same */

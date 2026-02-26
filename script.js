@@ -61,32 +61,92 @@ function initGame() {
 }
 
 function generatePath() {
+  // Start at top-left (0,0)
   let x = 0, y = 0;
   let pathIndex = 0;
+  
+  // Possible directions: right, down, left, up
+  const directions = [
+    {dx: 1, dy: 0},  // right
+    {dx: 0, dy: 1},  // down
+    {dx: -1, dy: 0}, // left
+    {dx: 0, dy: -1}  // up
+  ];
+  
+  // Track visited cells to avoid crossing the path
+  let visited = new Set();
+  visited.add(`0,0`);
   
   chosenWords.forEach((wordObj, wordIdx) => {
     const word = wordObj.word.toUpperCase();
     wordStartIndices[wordIdx] = pathIndex;
     
     for (let i = 0; i < word.length; i++) {
-      if (x > 6) x = 0, y++;
-      if (y > 6) y = 6; // Prevent going out of bounds
-      
+      // Place the letter
       grid[y][x] = word[i];
       solutionPath.push({x, y, letter: word[i], word: wordObj, wordIndex: wordIdx});
       pathIndex++;
       
-      // Move right, if at edge move down
-      if (x < 6) {
-        x++;
-      } else {
-        x = 0;
-        y++;
+      // If this is the last letter of the last word, we want to end at (6,6)
+      if (wordIdx === chosenWords.length - 1 && i === word.length - 1) {
+        // Need to get to (6,6) from current position
+        while (x < 6) {
+          x++;
+          if (!grid[y][x]) {
+            grid[y][x] = word[i]; // Fill with same letter for now, will be overwritten
+            solutionPath.push({x, y, letter: word[i], word: wordObj, wordIndex: wordIdx});
+            pathIndex++;
+          }
+        }
+        while (y < 6) {
+          y++;
+          if (!grid[y][x]) {
+            grid[y][x] = word[i];
+            solutionPath.push({x, y, letter: word[i], word: wordObj, wordIndex: wordIdx});
+            pathIndex++;
+          }
+        }
+        break;
+      }
+      
+      // Choose next direction, preferring to move toward bottom-right
+      if (i < word.length - 1) { // Don't choose direction for last letter
+        let possibleDirs = [];
+        
+        // Prioritize moving right and down to eventually reach bottom-right
+        if (x < 6 && !visited.has(`${x+1},${y}`)) {
+          possibleDirs.push({dx: 1, dy: 0, priority: 3});
+        }
+        if (y < 6 && !visited.has(`${x},${y+1}`)) {
+          possibleDirs.push({dx: 0, dy: 1, priority: 2});
+        }
+        if (x > 0 && !visited.has(`${x-1},${y}`)) {
+          possibleDirs.push({dx: -1, dy: 0, priority: 1});
+        }
+        if (y > 0 && !visited.has(`${x},${y-1}`)) {
+          possibleDirs.push({dx: 0, dy: -1, priority: 1});
+        }
+        
+        if (possibleDirs.length > 0) {
+          // Sort by priority and choose randomly among highest priority
+          possibleDirs.sort((a, b) => b.priority - a.priority);
+          const highestPriority = possibleDirs[0].priority;
+          const bestDirs = possibleDirs.filter(d => d.priority === highestPriority);
+          const chosen = bestDirs[Math.floor(Math.random() * bestDirs.length)];
+          
+          x += chosen.dx;
+          y += chosen.dy;
+          visited.add(`${x},${y}`);
+        } else {
+          // No valid moves, just move right or down
+          if (x < 6) x++;
+          else if (y < 6) y++;
+        }
       }
     }
   });
   
-  // Mark start and goal
+  // Ensure start and goal are marked
   grid[0][0] = solutionPath[0].letter;
   grid[6][6] = solutionPath[solutionPath.length - 1].letter;
 }
